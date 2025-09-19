@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/src/server.js",
     "dev": "npx tsx watch src/server.ts"
   },
   "repository": {
