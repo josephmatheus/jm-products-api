@@ -7,6 +7,15 @@ const prisma = new PrismaClient();
 
 app.use(express.json());
 
+app.get("/", (_, res) => {
+  res.json({
+    api: "JM-PRODUCTS-API",
+    message: "Bem-vindo à JM-PRODUCTS-API.",
+    version: "1.0.0",
+    timestamp: new Date().toLocaleString(),
+  });
+});
+
 app.get("/products", async (_, res) => {
   try {
     const products = await prisma.product.findMany({
