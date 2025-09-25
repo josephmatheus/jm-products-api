@@ -5,6 +5,8 @@ const port = 3000;
 const app = express();
 const prisma = new PrismaClient();
 
+app.use(express.json());
+
 app.get("/products", async (_, res) => {
   try {
     const products = await prisma.product.findMany({
@@ -83,7 +85,7 @@ app.get("/category/:name", async (req, res) => {
           name: {
             equals: categoryName,
             mode: "insensitive",
-          }
+          },
         },
       },
       orderBy: {
@@ -116,6 +118,49 @@ app.get("/category/:name", async (req, res) => {
     res.status(500).json({
       error: "INTERNAL_SERVER_ERROR",
       message: "Não foi possivel obter os produtos.",
+      timestamp: new Date().toLocaleString(),
+    });
+  }
+});
+
+app.post("/products", async (req, res) => {
+  const { name, description, price, category_id, brand_id, stock, sku } =
+    req.body;
+  try {
+    const productExists = await prisma.product.findUnique({
+      where: {
+        sku: sku.toUpperCase(),
+      },
+    });
+
+    if (productExists) {
+      return res.status(409).json({
+        error: "CONFLICT",
+        message: "Ja existe um produto com o código informado.",
+        timestamp: new Date().toLocaleString(),
+      });
+    }
+
+    await prisma.product.create({
+      data: {
+        name,
+        description,
+        price,
+        category_id,
+        brand_id,
+        stock,
+        sku: sku.toUpperCase(),
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Produto criado com sucesso.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Não foi possivel criar o produto.",
       timestamp: new Date().toLocaleString(),
     });
   }
