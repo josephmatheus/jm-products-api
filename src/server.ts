@@ -175,6 +175,67 @@ app.post("/products", async (req, res) => {
   }
 });
 
+app.put("/products/:id", async (req, res) => {
+  const searchID = Number(req.params.id);
+  const { name, description, price, category_id, brand_id, stock, sku } =
+    req.body;
+  try {
+    const productExists = await prisma.product.findUnique({
+      where: {
+        id: searchID,
+      },
+    });
+
+    if (!productExists) {
+      return res.status(404).json({
+        error: "NOT_FOUND",
+        message: "Não foi encontrado produto com o ID informado.",
+        timestamp: new Date().toLocaleString(),
+      });
+    }
+
+    await prisma.product.update({
+      where: {
+        id: searchID,
+      },
+      data: {
+        name,
+        description,
+        price,
+        category_id,
+        brand_id,
+        stock,
+        sku: sku.toUpperCase(),
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Produto atualizado com sucesso.",
+      product: await prisma.product.findUnique({
+        where: {
+          id: searchID,
+        },
+        include: {
+          categories: true,
+          brands: true,
+          products_images: {
+            orderBy: {
+              display_order: "asc",
+            },
+          },
+        },
+      })
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Não foi possivel atualizar o produto.",
+      timestamp: new Date().toLocaleString(),
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor em execução em http://localhost:${port}`);
 });
