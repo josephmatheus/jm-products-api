@@ -236,6 +236,43 @@ app.put("/products/:id", async (req, res) => {
   }
 });
 
+app.delete("/products/:id", async (req, res) => {
+  const searchID = Number(req.params.id);
+  try {
+    const productExists = await prisma.product.findUnique({
+      where: {
+        id: searchID,
+      },
+    });
+
+    if (!productExists) {
+      return res.status(404).json({
+        error: "NOT_FOUND",
+        message: "Não foi encontrado produto com o ID informado.",
+        timestamp: new Date().toLocaleString(),
+      });
+    }
+
+    await prisma.product.delete({
+      where: {
+        id: searchID,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Produto deletado com sucesso.",
+      product: productExists
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Não foi possivel deletar o produto.",
+      timestamp: new Date().toLocaleString(),
+    });
+  }
+})
+
 app.listen(port, () => {
   console.log(`Servidor em execução em http://localhost:${port}`);
 });
