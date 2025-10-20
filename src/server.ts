@@ -1,5 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import { responseMessages } from "./utils/responseMessages";
 
 const port = 3000;
 const app = express();
@@ -8,12 +9,7 @@ const prisma = new PrismaClient();
 app.use(express.json());
 
 app.get("/", (_, res) => {
-  res.json({
-    api: "JM-PRODUCTS-API",
-    message: "Bem-vindo à JM-PRODUCTS-API.",
-    version: "1.0.0",
-    timestamp: new Date().toLocaleString(),
-  });
+  res.json(responseMessages("/", "GET", 200));
 });
 
 app.get("/products", async (_, res) => {
@@ -32,18 +28,9 @@ app.get("/products", async (_, res) => {
         },
       },
     });
-    res.status(200).json({
-      success: true,
-      message: "Produtos obtidos com sucesso.",
-      total: products.length,
-      data: products,
-    });
+    res.status(200).json(responseMessages("/products", "GET", 200, products));
   } catch (err) {
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message: "Não foi possivel obter os produtos.",
-      timestamp: new Date().toLocaleString(),
-    });
+    res.status(500).json(responseMessages("/products", "GET", 500));
   }
 });
 
@@ -65,23 +52,11 @@ app.get("/products/:id", async (req, res) => {
       },
     });
     if (!product) {
-      return res.status(404).json({
-        error: "NOT_FOUND",
-        message: "Não foi encontrado produto com o ID informado.",
-        timestamp: new Date().toLocaleString(),
-      });
+      return res.status(404).json(responseMessages("/products/:id", "GET", 404));
     }
-    res.status(200).json({
-      success: true,
-      message: "Produto obtido com sucesso.",
-      data: product,
-    });
+    res.status(200).json(responseMessages("/products/:id", "GET", 200, product));
   } catch (error) {
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message: "Não foi possivel obter o produto.",
-      timestamp: new Date().toLocaleString(),
-    });
+    res.status(500).json(responseMessages("/products/:id", "GET", 500));
   }
 });
 
@@ -143,11 +118,7 @@ app.post("/products", async (req, res) => {
     });
 
     if (productExists) {
-      return res.status(409).json({
-        error: "CONFLICT",
-        message: "Ja existe um produto com o código informado.",
-        timestamp: new Date().toLocaleString(),
-      });
+      return res.status(409).json(responseMessages("/products", "POST", 409));
     }
 
     await prisma.product.create({
@@ -162,16 +133,22 @@ app.post("/products", async (req, res) => {
       },
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Produto criado com sucesso.",
-    });
+    res.status(201).json(responseMessages("/products", "POST", 201, await prisma.product.findUnique({
+      where: {
+        sku: sku.toUpperCase(),
+      },
+      include: {
+        categories: true,
+        brands: true,
+        products_images: {
+          orderBy: {
+            display_order: "asc",
+          },
+        },
+      }
+    })));
   } catch (error) {
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message: "Não foi possivel criar o produto.",
-      timestamp: new Date().toLocaleString(),
-    });
+    res.status(500).json(responseMessages("/products", "POST", 500));
   }
 });
 
@@ -187,11 +164,7 @@ app.put("/products/:id", async (req, res) => {
     });
 
     if (!productExists) {
-      return res.status(404).json({
-        error: "NOT_FOUND",
-        message: "Não foi encontrado produto com o ID informado.",
-        timestamp: new Date().toLocaleString(),
-      });
+      return res.status(404).json(responseMessages("/products/:id", "PUT", 404));
     }
 
     await prisma.product.update({
@@ -209,30 +182,24 @@ app.put("/products/:id", async (req, res) => {
       },
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Produto atualizado com sucesso.",
-      product: await prisma.product.findUnique({
-        where: {
-          id: searchID,
-        },
-        include: {
-          categories: true,
-          brands: true,
-          products_images: {
-            orderBy: {
-              display_order: "asc",
+    res.status(200).json(responseMessages("/products/:id", "PUT", 200, await prisma.product.findUnique({
+          where: {
+            id: searchID,
+          },
+          include: {
+            categories: true,
+            brands: true,
+            products_images: {
+              orderBy: {
+                display_order: "asc",
+              },
             },
           },
-        },
-      })
-    });
+        })
+      )
+    );
   } catch (error) {
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message: "Não foi possivel atualizar o produto.",
-      timestamp: new Date().toLocaleString(),
-    });
+    res.status(500).json(responseMessages("/products/:id", "PUT", 500));
   }
 });
 
@@ -243,14 +210,19 @@ app.delete("/products/:id", async (req, res) => {
       where: {
         id: searchID,
       },
+      include: {
+        categories: true,
+        brands: true,
+        products_images: {
+          orderBy: {
+            display_order: "asc",
+          },
+        },
+      }
     });
 
     if (!productExists) {
-      return res.status(404).json({
-        error: "NOT_FOUND",
-        message: "Não foi encontrado produto com o ID informado.",
-        timestamp: new Date().toLocaleString(),
-      });
+      return res.status(404).json(responseMessages("/products/:id", "DELETE", 404));
     }
 
     await prisma.product.delete({
@@ -259,17 +231,9 @@ app.delete("/products/:id", async (req, res) => {
       },
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Produto deletado com sucesso.",
-      product: productExists
-    });
+    res.status(200).json(responseMessages("/products/:id", "DELETE", 200, productExists));
   } catch (error) {
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message: "Não foi possivel deletar o produto.",
-      timestamp: new Date().toLocaleString(),
-    });
+    res.status(500).json(responseMessages("/products/:id", "DELETE", 500));
   }
 })
 
