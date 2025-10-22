@@ -2,7 +2,7 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./",
+    "rootDir": "./src",
     "outDir": "./dist",
 
     // Environment Settings
@@ -42,6 +42,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "data"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "data", "dist"]
 }
