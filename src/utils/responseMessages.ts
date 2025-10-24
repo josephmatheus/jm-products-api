@@ -100,6 +100,25 @@ export const responseMessages = (
         },
       },
     },
+    "/category/:name": {
+      GET: {
+        200: {
+          success: true,
+          message: "Produtos obtidos com sucesso.",
+          product: data || {},
+        },
+        404: {
+          error: "NOT_FOUND",
+          message: "Não foram encontrados produtos com a categoria informada.",
+          timestamp: new Date().toLocaleString(),
+        },
+        500: {
+          error: "INTERNAL_SERVER_ERROR",
+          message: " Não foi possivel obter os produtos.",
+          timestamp: new Date().toLocaleString(),
+        },
+      }
+    },
   };
 
   const routeResponse = routeMessages[route]?.[method]?.[statusCode] || {

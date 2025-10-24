@@ -1,12 +1,13 @@
 import { responseMessages } from "../utils/responseMessages";
 import * as productService from "../services/productService";
+import { Request, Response, NextFunction } from "express";
 
-export const getRoot = (req, res) => {
+export const getRoot = (req: Request, res: Response) => {
   const response = responseMessages("/", "GET", 200);
   res.status(200).json(response);
 };
 
-export const getAllProducts = async (req, res, next) => {
+export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const products = await productService.getAllProducts();
     const response = responseMessages("/products", "GET", 200, products);
@@ -16,9 +17,10 @@ export const getAllProducts = async (req, res, next) => {
   }
 };
 
-export const getProductById = async (req, res, next) => {
+export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "ID do produto é obrigatório." });
     const product = await productService.getProductById(id);
 
     if (!product) {
@@ -33,9 +35,10 @@ export const getProductById = async (req, res, next) => {
   }
 };
 
-export const getProductsByCategory = async (req, res, next) => {
+export const getProductsByCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name } = req.params;
+    if (!name) return res.status(400).json({ message: "Nome da categoria é obrigatório." });
     const products = await productService.getProductsByCategory(name);
 
     if (!products || products.length === 0) {
@@ -50,7 +53,7 @@ export const getProductsByCategory = async (req, res, next) => {
   }
 };
 
-export const createProduct = async (req, res, next) => {
+export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { sku } = req.body;
 
@@ -68,9 +71,10 @@ export const createProduct = async (req, res, next) => {
   }
 };
 
-export const updateProduct = async (req, res, next) => {
+export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "ID do produto é obrigatório." });
 
     const productExists = await productService.getProductById(id);
     if (!productExists) {
@@ -91,9 +95,10 @@ export const updateProduct = async (req, res, next) => {
   }
 };
 
-export const deleteProduct = async (req, res, next) => {
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "ID do produto é obrigatório." });
 
     const productExists = await productService.getProductById(id);
     if (!productExists) {
