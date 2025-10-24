@@ -15,7 +15,7 @@ export const getAllProducts = async () => {
   });
 };
 
-export const getProductById = async (id) => {
+export const getProductById = async (id: string) => {
   return await prisma.product.findUnique({
     where: { id: Number(id) },
     include: {
@@ -28,7 +28,7 @@ export const getProductById = async (id) => {
   });
 };
 
-export const getProductsByCategory = async (categoryName) => {
+export const getProductsByCategory = async (categoryName: string) => {
   return await prisma.product.findMany({
     where: {
       categories: {
@@ -49,13 +49,13 @@ export const getProductsByCategory = async (categoryName) => {
   });
 };
 
-export const checkProductBySku = async (sku) => {
+export const checkProductBySku = async (sku: string) => {
   return await prisma.product.findUnique({
     where: { sku: sku.toUpperCase() },
   });
 };
 
-export const createProduct = async (productData) => {
+export const createProduct = async (productData: any) => {
   const { name, description, price, category_id, brand_id, stock, sku } =
     productData;
 
@@ -83,7 +83,7 @@ export const createProduct = async (productData) => {
   });
 };
 
-export const updateProduct = async (id, productData) => {
+export const updateProduct = async (id: string, productData: any) => {
   const { name, description, price, category_id, brand_id, stock, sku } =
     productData;
 
@@ -112,7 +112,7 @@ export const updateProduct = async (id, productData) => {
   });
 };
 
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (id: string) => {
   return await prisma.product.delete({
     where: { id: Number(id) },
   });
